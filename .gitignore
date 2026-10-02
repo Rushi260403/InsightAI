@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+env/
+
+# Environment variables
+.env
+.env.*
+
+# Angular / Node
+node_modules/
+dist/
+.angular/
+npm-debug.log*
+
+# VS Code
+.vscode/
+
+# Data files
+*.csv
+*.xlsx
+*.xls
+
+# Local databases / temporary files
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Project generated files
+reports/generated/
