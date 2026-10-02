@@ -1,5 +1,6 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 
+from app.dependencies import get_current_user
 from app.database import engine, Base
 from app import models
 from app.users import router as users_router
@@ -19,4 +20,13 @@ def home():
     return {
         "message": "Welcome to InsightAI API",
         "status": "running"
+    }
+
+@app.get("/protected")
+def protected_route(
+    current_user: dict = Depends(get_current_user)
+):
+    return {
+        "message": "You accessed a protected API",
+        "user": current_user
     }
