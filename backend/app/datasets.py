@@ -9,6 +9,10 @@ from sqlalchemy.orm import Session
 from app.database import SessionLocal
 from app.models import Dataset
 from app.dependencies import get_current_user
+from app.services.dataset_service import (
+    load_user_dataset,
+    generate_dataset_profile
+)
 
 
 router = APIRouter(
@@ -195,3 +199,56 @@ def delete_dataset(
         "message": "Dataset deleted successfully",
         "dataset_id": dataset_id
     }
+
+@router.get("/{dataset_id}/load")
+def load_dataset(
+    dataset_id: int,
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    user_id = current_user["user_id"]
+
+    try:
+        dataset, dataframe = load_user_dataset(
+            dataset_id,
+            user_id,
+            db
+        )
+
+    except ValueError as e:
+        raise HTTPException(
+            status_code=404,
+            detail=str(e)
+        )
+
+    return {
+        "message": "Dataset loaded successfully",
+        "dataset_id": dataset.id,
+        "dataset_name": dataset.dataset_name,
+        "rows": len(dataframe),
+        "columns": len(dataframe.columns),
+        "column_names": list(dataframe.columns)
+    }
+
+@router.get("/{dataset_id}/profile")
+def profile_dataset(
+    dataset_id: int,
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    user_id = current_user["user_id"]
+
+    try:
+        result = generate_dataset_profile(
+            dataset_id,
+            user_id,
+            db
+        )
+
+    except ValueError as e:
+        raise HTTPException(
+            status_code=404,
+            detail=str(e)
+        )
+
+    return result
