@@ -11,7 +11,8 @@ from app.models import Dataset
 from app.dependencies import get_current_user
 from app.services.dataset_service import (
     load_user_dataset,
-    generate_dataset_profile
+    generate_dataset_profile,
+    clean_user_dataset
 )
 
 
@@ -252,3 +253,65 @@ def profile_dataset(
         )
 
     return result
+
+@router.get("/{dataset_id}/clean")
+def clean_dataset(
+    dataset_id: int,
+    missing_value_strategy: str = "median",
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    user_id = current_user["user_id"]
+
+    # Check strategy
+    if missing_value_strategy not in [
+        "mean",
+        "median",
+        "mode"
+    ]:
+        raise HTTPException(
+            status_code=400,
+            detail="Strategy must be mean, median, or mode"
+        )
+
+    try:
+        result = clean_user_dataset(
+            dataset_id,
+            user_id,
+            db,
+            missing_value_strategy
+        )
+
+    except ValueError as e:
+        raise HTTPException(
+            status_code=404,
+            detail=str(e)
+        )
+
+    dataframe = result["data"]
+
+    dataframe = dataframe.astype(object).where(
+    dataframe.notna(),
+    None
+    )
+
+    return {
+        "message": "Dataset cleaned successfully",
+        "dataset_id": result["dataset_id"],
+        "dataset_name": result["dataset_name"],
+        "original_rows": result["original_rows"],
+        "cleaned_rows": result["cleaned_rows"],
+        "original_columns": result["original_columns"],
+        "cleaned_columns": result["cleaned_columns"],
+        "duplicates_removed": result["duplicates_removed"],
+        "missing_value_strategy": result[
+            "missing_value_strategy"
+        ],
+        "columns": list(dataframe.columns),
+        "data": dataframe.where(
+            dataframe.notna(),
+            None
+            ).to_dict(
+                orient="records"
+            )
+    }

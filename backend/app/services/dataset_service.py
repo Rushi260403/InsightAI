@@ -11,6 +11,12 @@ from app.services.data_processor import (
     get_numeric_statistics
 )
 
+from app.services.data_cleaner import (
+    clean_column_names,
+    handle_missing_values,
+    remove_duplicate_rows,
+    fix_basic_data_types
+)
 
 def load_user_dataset(
     dataset_id: int,
@@ -76,4 +82,56 @@ def generate_dataset_profile(
         "file_name": dataset.file_name,
         "profile": profile,
         "numeric_statistics": numeric_statistics
+    }
+
+def clean_user_dataset(
+    dataset_id: int,
+    user_id: int,
+    db: Session,
+    missing_value_strategy: str = "median"
+):
+    """
+    Load a user's dataset and perform basic cleaning.
+    """
+
+    # Load dataset
+    dataset, dataframe = load_user_dataset(
+        dataset_id,
+        user_id,
+        db
+    )
+
+    # Store original information
+    original_rows = len(dataframe)
+    original_columns = len(dataframe.columns)
+
+    # Step 1: Clean column names
+    dataframe = clean_column_names(dataframe)
+
+    # Step 2: Handle missing values
+    dataframe = handle_missing_values(
+        dataframe,
+        missing_value_strategy
+    )
+
+    # Step 3: Remove duplicate rows
+    dataframe, duplicate_count = remove_duplicate_rows(
+        dataframe
+    )
+
+    # Step 4: Fix basic data types
+    dataframe = fix_basic_data_types(
+        dataframe
+    )
+
+    return {
+        "dataset_id": dataset.id,
+        "dataset_name": dataset.dataset_name,
+        "original_rows": original_rows,
+        "original_columns": original_columns,
+        "cleaned_rows": len(dataframe),
+        "cleaned_columns": len(dataframe.columns),
+        "duplicates_removed": duplicate_count,
+        "missing_value_strategy": missing_value_strategy,
+        "data": dataframe
     }
