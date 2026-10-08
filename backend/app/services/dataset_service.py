@@ -8,7 +8,12 @@ from app.services.data_processor import (
     read_dataset,
     validate_dataset,
     get_dataset_profile,
-    get_numeric_statistics
+    get_numeric_statistics,
+    get_eda_summary,
+    get_eda_numeric_analysis,
+    get_eda_categorical_analysis,
+    get_eda_correlation_analysis,
+    get_eda_outlier_analysis
 )
 
 from app.services.data_cleaner import (
@@ -134,4 +139,50 @@ def clean_user_dataset(
         "duplicates_removed": duplicate_count,
         "missing_value_strategy": missing_value_strategy,
         "data": dataframe
+    }
+
+def generate_eda_report(
+    dataset_id: int,
+    user_id: int,
+    db: Session
+):
+    """
+    Generate a complete EDA report
+    for a user's dataset.
+    """
+
+    dataset, dataframe = load_user_dataset(
+        dataset_id,
+        user_id,
+        db
+    )
+
+    eda_summary = get_eda_summary(
+        dataframe
+    )
+
+    numeric_analysis = get_eda_numeric_analysis(
+        dataframe
+    )
+
+    categorical_analysis = get_eda_categorical_analysis(
+        dataframe
+    )
+
+    correlation_analysis = get_eda_correlation_analysis(
+        dataframe
+    )
+
+    outlier_analysis = get_eda_outlier_analysis(
+        dataframe
+    )
+
+    return {
+        "dataset_id": dataset.id,
+        "dataset_name": dataset.dataset_name,
+        "summary": eda_summary,
+        "numeric_analysis": numeric_analysis,
+        "categorical_analysis": categorical_analysis,
+        "correlation_analysis": correlation_analysis,
+        "outlier_analysis": outlier_analysis
     }

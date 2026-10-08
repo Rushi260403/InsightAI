@@ -12,7 +12,8 @@ from app.dependencies import get_current_user
 from app.services.dataset_service import (
     load_user_dataset,
     generate_dataset_profile,
-    clean_user_dataset
+    clean_user_dataset,
+    generate_eda_report
 )
 
 
@@ -314,4 +315,44 @@ def clean_dataset(
             ).to_dict(
                 orient="records"
             )
+    }
+
+@router.get("/{dataset_id}/eda")
+def get_dataset_eda(
+    dataset_id: int,
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    user_id = current_user["user_id"]
+
+    try:
+        report = generate_eda_report(
+            dataset_id,
+            user_id,
+            db
+        )
+
+    except ValueError as e:
+        raise HTTPException(
+            status_code=404,
+            detail=str(e)
+        )
+
+    return {
+        "message": "EDA report generated successfully",
+        "dataset_id": report["dataset_id"],
+        "dataset_name": report["dataset_name"],
+        "summary": report["summary"],
+        "numeric_analysis": report[
+            "numeric_analysis"
+        ],
+        "categorical_analysis": report[
+            "categorical_analysis"
+        ],
+        "correlation_analysis": report[
+            "correlation_analysis"
+        ],
+        "outlier_analysis": report[
+            "outlier_analysis"
+        ]
     }
