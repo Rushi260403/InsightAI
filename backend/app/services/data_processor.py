@@ -256,6 +256,9 @@ def get_eda_numeric_analysis(dataframe):
 def get_eda_categorical_analysis(dataframe):
     """
     Generate analysis for categorical columns.
+
+    Only the top 10 most frequent values
+    are returned to keep the response lightweight.
     """
 
     categorical_dataframe = dataframe.select_dtypes(
@@ -271,9 +274,11 @@ def get_eda_categorical_analysis(dataframe):
             .value_counts(dropna=False)
         )
 
+        top_values = value_counts.head(10)
+
         frequencies = []
 
-        for value, count in value_counts.items():
+        for value, count in top_values.items():
 
             if pd.isna(value):
                 value = None
@@ -285,7 +290,6 @@ def get_eda_categorical_analysis(dataframe):
                 "count": int(count)
             })
 
-        # Most frequent value
         if len(value_counts) > 0:
 
             most_frequent_value = value_counts.index[0]
@@ -302,12 +306,16 @@ def get_eda_categorical_analysis(dataframe):
 
         analysis.append({
             "column_name": str(column),
+
             "unique_values": int(
                 categorical_dataframe[column].nunique(
                     dropna=True
                 )
             ),
-            "most_frequent_value": most_frequent_value,
+
+            "most_frequent_value":
+                most_frequent_value,
+
             "frequencies": frequencies
         })
 
