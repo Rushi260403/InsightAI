@@ -1,0 +1,22 @@
+<div class="app-container">
+  <header class="top-header">
+    <div class="logo">InsightAI</div>
+
+    <div class="header-title">AI-Powered Data Analytics</div>
+
+    <button type="button" class="logout-button" (click)="logout()">Logout</button>
+  </header>
+
+  <div class="main-layout">
+    <aside class="sidebar">
+      <nav>
+        <a routerLink="/dashboard">Dashboard</a>
+        <a routerLink="/datasets">Datasets</a>
+      </nav>
+    </aside>
+
+    <main class="content">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>

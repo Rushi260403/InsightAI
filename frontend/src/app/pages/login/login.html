@@ -1,0 +1,41 @@
+<div class="login-container">
+  <div class="login-card">
+    <h1>InsightAI</h1>
+    <p class="subtitle">AI-Powered Data Analytics</p>
+
+    <h2>Welcome Back</h2>
+    <p>Sign in to analyze your datasets.</p>
+
+    <form (ngSubmit)="onLogin()">
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          [(ngModel)]="email"
+          placeholder="Enter your email"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input
+          type="password"
+          id="password"
+          name="password"
+          [(ngModel)]="password"
+          placeholder="Enter your password"
+          required
+        />
+      </div>
+
+      <button type="submit" [disabled]="isLoading">
+        {{ isLoading ? 'Signing in...' : 'Sign In' }}
+      </button>
+    </form>
+
+    <p class="message">{{ message }}</p>
+  </div>
+</div>

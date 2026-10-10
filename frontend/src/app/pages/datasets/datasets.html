@@ -1,0 +1,173 @@
+
+<div class="datasets-page">
+  <h1>My Datasets</h1>
+  <p>Upload and manage your datasets in InsightAI.</p>
+
+  <!-- Upload Dataset -->
+  <div class="upload-card">
+    <h2>Upload Dataset</h2>
+
+    <input
+      type="file"
+      accept=".csv,.xlsx,.xls"
+      (change)="onFileSelected($event)"
+    />
+
+    @if (selectedFile) {
+      <p>Selected file: {{ selectedFile.name }}</p>
+    }
+
+    <button
+      type="button"
+      (click)="uploadDataset()"
+      [disabled]="isUploading || !selectedFile"
+    >
+      {{ isUploading ? 'Uploading...' : 'Upload Dataset' }}
+    </button>
+  </div>
+
+  <p>{{ message }}</p>
+
+  <!-- Uploaded Datasets -->
+  <h2>Uploaded Datasets</h2>
+
+  <div class="dataset-list">
+    @for (dataset of datasets; track dataset.dataset_id) {
+      <div class="dataset-card">
+        <h3>{{ dataset.dataset_name }}</h3>
+        <p>Dataset ID: {{ dataset.dataset_id }}</p>
+        <p>Filename: {{ dataset.file_name }}</p>
+
+        <button
+          type="button"
+          (click)="viewDetails(dataset.dataset_id)"
+        >
+          View Details
+        </button>
+      </div>
+    }
+  </div>
+
+  <!-- Dataset Profile -->
+  @if (selectedDatasetId !== null) {
+    <div class="profile-section">
+      <h2>Dataset Profile</h2>
+
+      @if (isLoadingProfile) {
+        <p>Loading dataset profile...</p>
+      } @else if (profileMessage) {
+        <p>{{ profileMessage }}</p>
+      } @else if (datasetProfile) {
+
+        <h3>{{ datasetProfile.dataset_name }}</h3>
+        <p>Filename: {{ datasetProfile.file_name }}</p>
+
+        <!-- Summary Cards -->
+        <div class="profile-stats">
+          <div class="stat-card">
+            <h3>Total Rows</h3>
+            <p>
+              {{ datasetProfile.profile?.total_rows ?? datasetProfile.total_rows }}
+            </p>
+          </div>
+
+          <div class="stat-card">
+            <h3>Total Columns</h3>
+            <p>
+              {{ datasetProfile.profile?.total_columns ?? datasetProfile.total_columns }}
+            </p>
+          </div>
+
+          <div class="stat-card">
+            <h3>Duplicate Rows</h3>
+            <p>
+              {{ datasetProfile.profile?.duplicate_rows ?? datasetProfile.duplicate_rows }}
+            </p>
+          </div>
+
+          <div class="stat-card">
+            <h3>Duplicate Percentage</h3>
+            <p>
+              {{ datasetProfile.profile?.duplicate_percentage ?? datasetProfile.duplicate_percentage }}%
+            </p>
+          </div>
+        </div>
+
+        <!-- Numeric Statistics -->
+        <h3>Numeric Statistics</h3>
+
+        @if (datasetProfile.numeric_statistics?.length > 0) {
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Column</th>
+                  <th>Count</th>
+                  <th>Mean</th>
+                  <th>Median</th>
+                  <th>Minimum</th>
+                  <th>Maximum</th>
+                  <th>Standard Deviation</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                @for (
+                  stat of datasetProfile.numeric_statistics;
+                  track stat.column_name
+                ) {
+                  <tr>
+                    <td>{{ stat.column_name }}</td>
+                    <td>{{ stat.count }}</td>
+                    <td>{{ stat.mean }}</td>
+                    <td>{{ stat.median }}</td>
+                    <td>{{ stat.minimum }}</td>
+                    <td>{{ stat.maximum }}</td>
+                    <td>{{ stat.standard_deviation }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        } @else {
+          <p>No numeric statistics available.</p>
+        }
+
+      }
+    </div>
+  }
+</div>
+
+        <!-- Column Details -->
+        <h3>Column Details</h3>
+
+        @if (datasetProfile.profile?.columns?.length > 0) {
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Column Name</th>
+                  <th>Data Type</th>
+                  <th>Missing Values</th>
+                  <th>Missing Percentage</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                @for (
+                  column of datasetProfile.profile.columns;
+                  track column.column_name
+                ) {
+                  <tr>
+                    <td>{{ column.column_name }}</td>
+                    <td>{{ column.data_type }}</td>
+                    <td>{{ column.missing_values }}</td>
+                    <td>{{ column.missing_percentage }}%</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        } @else {
+          <p>No column details available.</p>
+        }
